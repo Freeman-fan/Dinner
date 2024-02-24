@@ -70,7 +70,7 @@ namespace ConsoleApp3
                 {
                     MessageBody reply = new MessageBody(new List<SoraSegment>()
                     {
-                        SoraSegment.Text("晚上好"),
+                        SoraSegment.Text("晚上了吗……我刚睡醒欸"),
                     });
                     await EventArgs.SourceGroup.SendGroupMessage(reply);
                 }
@@ -87,10 +87,20 @@ namespace ConsoleApp3
                         return;
                     }
                     //计算价格
-                    string num = message_no_point.Remove(0, 1);
-                    double jp = float.Parse(num);
+                    double jp = 0;
+                    int point = 0;
+                    //double jp = double.Parse(message_no_point.Substring(1, message_no_point.IndexOf('p') - 1));
+                    //string pointstring = message_no_point.Substring(message_no_point.IndexOf('p') + 1);
+                    //int point = string.IsNullOrEmpty(pointstring) ? 0 : int.Parse(pointstring);
+                    Match match = Regex.Match(message_no_point, @"(?<=y)\d+(?=p|$)");
+                    if (match.Success)
+                    {
+                        jp = double.Parse(match.Value);
+                        point = message_no_point.Contains("p") ? int.Parse(message_no_point.Substring(message_no_point.IndexOf("p") + 1)) : 0;
+                    }
                     double cny1 = 0, cny2 = 0, cny3 = 0;
-                    string type0 = "原价：" + jp + "y\n" + "当前参考汇率为:" + rate + "\n";
+                    double pprice = 0;  //均价
+                    text = "原价：" + jp + "y\n" + "当前参考汇率为:" + rate + "\n";
                     //①
                     string type1 = "";
                     if (jp > 1000)
@@ -103,12 +113,12 @@ namespace ConsoleApp3
                         cny1 = jp * 0.053;
                         type1 = "53汇";
                     }
-                    cny1 = Math.Round(cny1, MidpointRounding.AwayFromZero);
+                    cny1 = Math.Round(cny1,2, MidpointRounding.AwayFromZero);
                     type1 = "人工切(" + type1 + "):" + cny1 + "r\n";
                     //②
                     string type2 = "";
                     cny2 = (jp + 50) * (rate + 0.003);
-                    cny2 = Math.Round(cny2, MidpointRounding.AwayFromZero);
+                    cny2 = Math.Round(cny2,2, MidpointRounding.AwayFromZero);
                     type2 = "机切浮动汇:" + cny2 + "r\n";
                     //③
                     string type3 = "";
@@ -120,15 +130,22 @@ namespace ConsoleApp3
                     {
                         cny3 = (jp + 100) * 0.052;
                     }
-                    cny3 = Math.Round(cny3, MidpointRounding.AwayFromZero);
-                    type3 = "机切52汇:" + cny3 + "r";
-                    //消息模块
-                    text = type0 + type1 + type2 + type3;
-                    MessageBody reply = new MessageBody(new List<SoraSegment>()
+                    cny3 = Math.Round(cny3,2, MidpointRounding.AwayFromZero);
+                    type3 = "机切52汇:" + cny3 + "r\n";
+                    //计算最小值
+                    double min = Math.Min(cny1, Math.Min(cny2, cny3));
+                    //计算均价
+                    string ptext = "";
+                    if (point != 0)
                     {
-                        SoraSegment.Text(text),
-                    });
-                    await EventArgs.SourceGroup.SendGroupMessage(reply);
+                        pprice = min / point;
+                        pprice = Math.Round(pprice,2, MidpointRounding.AwayFromZero);
+                        ptext = "共" + point + "点，每点" + pprice + "r\n";
+                    }
+                    //消息模块
+                    text += type1 + type2 + type3 + ptext;
+                    text = text.TrimEnd('\n');
+                    await EventArgs.SourceGroup.SendGroupMessage(text);
                 }
 
                 /*2.修改汇率【.c】*/
