@@ -70,7 +70,7 @@ namespace ConsoleApp3
                 {
                     MessageBody reply = new MessageBody(new List<SoraSegment>()
                     {
-                        SoraSegment.Text("晚上好"),
+                        SoraSegment.Text("晚上了吗……我刚睡醒欸"),
                     });
                     await EventArgs.SourceGroup.SendGroupMessage(reply);
                 }
