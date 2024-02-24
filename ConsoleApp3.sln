@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34525.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QQBot(bySora)", "ConsoleApp3\QQBot(bySora).csproj", "{6E7BA517-16B8-45DF-96E0-FA0F8D7ED98C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6E7BA517-16B8-45DF-96E0-FA0F8D7ED98C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E7BA517-16B8-45DF-96E0-FA0F8D7ED98C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E7BA517-16B8-45DF-96E0-FA0F8D7ED98C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E7BA517-16B8-45DF-96E0-FA0F8D7ED98C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {938512FA-3F9F-4C33-9023-04B9DC92B08F}
+	EndGlobalSection
+EndGlobal
