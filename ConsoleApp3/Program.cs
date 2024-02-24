@@ -12,6 +12,7 @@ using Sora.Interfaces;
 using Sora.Net.Config;
 using Sora.Util;
 using YukariToolBox.LightLog;
+using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ConsoleApp3
@@ -38,7 +39,9 @@ namespace ConsoleApp3
             //主程序
             service.Event.OnGroupMessage += async (sender, EventArgs) =>
             {
-                //读取消息内容
+                /*******************************************
+                 * 读取消息，提取文本
+                 *******************************************/
                 string message = EventArgs.Message.GetText();
                 string message_no_point = message.Remove(0, 1);
                 //判断是否为指令
@@ -47,8 +50,13 @@ namespace ConsoleApp3
                 {
                     return;
                 }
-                //判断内容，返回数据
+
+                /******************************************
+                 * 消息处理和回复
+                 ******************************************/
+
                 /*0.聊天*/
+                //早上好
                 if (message_no_point == "早上好")
                 {
                     MessageBody reply = new MessageBody(new List<SoraSegment>()
@@ -56,8 +64,9 @@ namespace ConsoleApp3
                         SoraSegment.Text("早上好……啊！已经早上了吗"),
                     });
                     await EventArgs.SourceGroup.SendGroupMessage(reply);
-                }
-                else if (message_no_point == "晚上好")
+                };
+                //晚上好
+                if (message_no_point == "晚上好")
                 {
                     MessageBody reply = new MessageBody(new List<SoraSegment>()
                     {
@@ -77,27 +86,6 @@ namespace ConsoleApp3
                         await EventArgs.SourceGroup.SendGroupMessage(text);
                         return;
                     }
-                    /*使用ini配置文件读取汇率，已废弃
-                    string filePath = "rate.ini";
-                    try
-                    {
-                        using (StreamReader sr = new StreamReader(filePath))
-                        {
-                            string line;
-                            while ((line = sr.ReadLine()) != null)
-                            {
-                                rate = double.Parse(line);
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        string debug = "【错误】" + e.Message + "\n" + "出错了！请将此消息与您发送的消息截图，并发送给管理员“泛进中举”";
-                        await EventArgs.SourceGroup.SendGroupMessage(debug);
-                        return;
-                    }
-                    */
-
                     //计算价格
                     string num = message_no_point.Remove(0, 1);
                     double jp = float.Parse(num);
@@ -161,7 +149,42 @@ namespace ConsoleApp3
                     await EventArgs.SourceGroup.SendGroupMessage(text);
                 }
 
-                /*api测试区域*/
+                /*3.常用链接【.l】*/
+                if (message_no_point[0] == char.Parse("l"))
+                {
+                    string text = "";
+                    switch (message_no_point.Remove(0, 1))
+                    {
+                        case "收集表" or "1":
+                            {
+                                text = "切煤收集表:\nhttps://flowus.cn/form/4c511090-12d8-4558-8ec8-b622dc7ea182";
+                                break;
+                            };
+                        case "记录表" or "2":
+                            {
+                                text = "切煤记录表:\nhttps://flowus.cn/share/c4d1ab4e-08fe-43b0-8dc8-459595702111";
+                                break;
+                            };
+                        case "maetown":
+                            {
+                                text = "Maetown下载链接:\nhttps://statics.maetown.cn/UploadFile/download/maetown_android/3d4e5041253f488db9dd8706aaaaeb62.apk";
+                                break;
+                            }
+                        default:
+                            {
+                                text = "没有找到你要的链接哦";
+                                break;
+                            };
+                    };
+                    await EventArgs.SourceGroup.SendGroupMessage(text);
+                }
+
+
+
+
+                /*****************************************
+                 * api测试区域
+                 *****************************************/
 
                 //读取消息发送者qq号
                 //string senderid = EventArgs.Sender.Id.ToString();
