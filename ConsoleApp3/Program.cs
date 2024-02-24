@@ -119,7 +119,7 @@ namespace ConsoleApp3
                     type1 = "人工切(" + type1 + "):" + cny1 + "r\n";
                     //②
                     string type2 = "";
-                    cny2 = jp * rate;
+                    cny2 = (jp + 50) * (rate + 0.003);
                     cny2 = Math.Round(cny2, MidpointRounding.AwayFromZero);
                     type2 = "机切浮动汇:" + cny2 + "r\n";
                     //③
@@ -149,9 +149,9 @@ namespace ConsoleApp3
                     string text = "";
                     string newrate = message_no_point.Remove(0, 1);
                     //检查汇率合法性
-                    if(Regex.IsMatch(newrate, @"^\d+(\.\d{2,4})?$") == true)
+                    if (Regex.IsMatch(newrate, @"^\d+(\.\d{2,4})?$") == true)
                     {
-                        rate=double.Parse(newrate);
+                        rate = double.Parse(newrate);
                         text = "已修改汇率为" + rate;
                     }
                     else
@@ -166,14 +166,14 @@ namespace ConsoleApp3
                 //读取消息发送者qq号
                 //string senderid = EventArgs.Sender.Id.ToString();
 
-                };
+            };
 
 
 
-                //启动服务并捕捉错误
+            //启动服务并捕捉错误
 
-                await service.StartService()
-                .RunCatch(e => Log.Error("Sora Service", Log.ErrorLogBuilder(e)));
+            await service.StartService()
+            .RunCatch(e => Log.Error("Sora Service", Log.ErrorLogBuilder(e)));
             await Task.Delay(-1);
 
         }
