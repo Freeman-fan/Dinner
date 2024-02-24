@@ -19,6 +19,7 @@ namespace ConsoleApp3
 {
     internal class Program
     {
+        
         static async Task Main(string[] args)
         {
             //设置log等级
@@ -113,12 +114,12 @@ namespace ConsoleApp3
                         cny1 = jp * 0.053;
                         type1 = "53汇";
                     }
-                    cny1 = Math.Round(cny1,2, MidpointRounding.AwayFromZero);
+                    cny1 = Math.Round(cny1, 2, MidpointRounding.AwayFromZero);
                     type1 = "人工切(" + type1 + "):" + cny1 + "r\n";
                     //②
                     string type2 = "";
                     cny2 = (jp + 50) * (rate + 0.003);
-                    cny2 = Math.Round(cny2,2, MidpointRounding.AwayFromZero);
+                    cny2 = Math.Round(cny2, 2, MidpointRounding.AwayFromZero);
                     type2 = "机切浮动汇:" + cny2 + "r\n";
                     //③
                     string type3 = "";
@@ -130,22 +131,35 @@ namespace ConsoleApp3
                     {
                         cny3 = (jp + 100) * 0.052;
                     }
-                    cny3 = Math.Round(cny3,2, MidpointRounding.AwayFromZero);
+                    cny3 = Math.Round(cny3, 2, MidpointRounding.AwayFromZero);
                     type3 = "机切52汇:" + cny3 + "r\n";
                     //计算最小值
                     double min = Math.Min(cny1, Math.Min(cny2, cny3));
+                    if (min == cny1)
+                    {
+                        type1 = "⭐" + type1;
+                    }
+                    else if (min == cny2)
+                    {
+                        type2 = "⭐" + type2;
+                    }
+                    else if (min == cny3)
+                    {
+                        type3 = "⭐" + type3;
+                    }
                     //计算均价
                     string ptext = "";
                     if (point != 0)
                     {
                         pprice = min / point;
-                        pprice = Math.Round(pprice,2, MidpointRounding.AwayFromZero);
+                        pprice = Math.Round(pprice, 2, MidpointRounding.AwayFromZero);
                         ptext = "共" + point + "点，每点" + pprice + "r\n";
                     }
                     //消息模块
                     text += type1 + type2 + type3 + ptext;
                     text = text.TrimEnd('\n');
-                    await EventArgs.SourceGroup.SendGroupMessage(text);
+                    MessageBody reply = ReplyTextMessage(text, EventArgs.Message.MessageId);
+                    await EventArgs.Reply(reply);
                 }
 
                 /*2.修改汇率【.c】*/
@@ -163,7 +177,8 @@ namespace ConsoleApp3
                     {
                         text = "汇率格式错误，请检查";
                     }
-                    await EventArgs.SourceGroup.SendGroupMessage(text);
+                    MessageBody reply = ReplyTextMessage(text, EventArgs.Message.MessageId);
+                    await EventArgs.Reply(reply);
                 }
 
                 /*3.常用链接【.l】*/
@@ -193,7 +208,8 @@ namespace ConsoleApp3
                                 break;
                             };
                     };
-                    await EventArgs.SourceGroup.SendGroupMessage(text);
+                    MessageBody reply = ReplyTextMessage(text, EventArgs.Message.MessageId);
+                    await EventArgs.Reply(reply);
                 }
 
 
@@ -203,9 +219,17 @@ namespace ConsoleApp3
                  * api测试区域
                  *****************************************/
 
-                //读取消息发送者qq号
-                //string senderid = EventArgs.Sender.Id.ToString();
+                /*读取消息发送者qq号
+                string senderid = EventArgs.Sender.Id.ToString();
+                 */
 
+                /*回复消息设置
+                int messageId = 0;
+                messageId = (int)EventArgs.Message.MessageId;
+                string testText = "这是一段测试文本";
+                MessageBody testReply = ReplyTextMessage(testText, messageId);
+                await EventArgs.Reply(testReply);
+                */
             };
 
 
@@ -217,5 +241,16 @@ namespace ConsoleApp3
             await Task.Delay(-1);
 
         }
+
+        static MessageBody ReplyTextMessage(string text, int messageId)  //构建回复纯文本文字
+        {
+            MessageBody reply = new MessageBody(new List<SoraSegment>()
+            {
+                SoraSegment.Reply(messageId),
+                SoraSegment.Text(text),
+            });
+            return reply;
+        }
+
     }
 }
