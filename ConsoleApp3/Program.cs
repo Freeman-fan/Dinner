@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Sora;
@@ -14,12 +15,13 @@ using Sora.Util;
 using YukariToolBox.LightLog;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Sora.Net;
 
 namespace ConsoleApp3
 {
     internal class Program
     {
-        
+
         static async Task Main(string[] args)
         {
             //设置log等级
@@ -36,6 +38,7 @@ namespace ConsoleApp3
 
             ISoraService service = SoraServiceFactory.CreateService(new ServerConfig());
 
+            //ConnectionManager.ServerAsyncCallBackHandler(ConnectionManager)
 
             //主程序
             service.Event.OnGroupMessage += async (sender, EventArgs) =>
@@ -43,14 +46,17 @@ namespace ConsoleApp3
                 /*******************************************
                  * 读取消息，提取文本
                  *******************************************/
+
                 string message = EventArgs.Message.GetText();
-                string message_no_point = message.Remove(0, 1);
                 //判断是否为指令
                 char first = message[0];
                 if (first != char.Parse("."))
                 {
                     return;
                 }
+                //提取非点内容
+                string message_no_point = message.Remove(0, 1);
+
 
                 /******************************************
                  * 消息处理和回复
@@ -242,7 +248,7 @@ namespace ConsoleApp3
 
         }
 
-        static MessageBody ReplyTextMessage(string text, int messageId)  //构建回复纯文本文字
+        static MessageBody ReplyTextMessage(string text, int messageId)  //构建回复：纯文本文字
         {
             MessageBody reply = new MessageBody(new List<SoraSegment>()
             {
@@ -251,6 +257,27 @@ namespace ConsoleApp3
             });
             return reply;
         }
+
+
+        static MessageBody ReplyPhoto(System.Drawing.Image photo)   //构建回复：单一图片
+        {
+            //将image转为base64流
+            string photoStr = "";
+            MemoryStream memoryStream = new MemoryStream();
+            photo.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Jpeg);
+            byte[] arr = new byte[memoryStream.Length];
+            memoryStream.Position = 0;
+            memoryStream.Read(arr, 0, (int)memoryStream.Length);
+            memoryStream.Close();
+            photoStr = Convert.ToBase64String(arr);
+            //构建回复体
+            MessageBody reply = new MessageBody(new List<SoraSegment>()
+            {
+                SoraSegment.Image(photoStr),
+            });
+            return reply;
+        }
+
 
     }
 }
