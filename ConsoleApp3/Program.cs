@@ -222,6 +222,11 @@ namespace ConsoleApp3
                         message = "我在吃，你呢";
                         return true;
                     }
+                case "h":
+                    {
+                        message = "帮助文档:\nhttps://flowus.cn/freemanf/share/7ddb325a-f1fd-48db-bf62-964fa6cb8cf4";
+                        return true;
+                    };
             }
             return false;
         }
@@ -351,9 +356,14 @@ namespace ConsoleApp3
                         text = "切煤记录表:\nhttps://flowus.cn/share/c4d1ab4e-08fe-43b0-8dc8-459595702111";
                         return true;
                     };
-                case "maetown":
+                case "maetown" or "3":
                     {
                         text = "Maetown下载链接:\nhttps://statics.maetown.cn/UploadFile/download/maetown_android/3d4e5041253f488db9dd8706aaaaeb62.apk";
+                        return true;
+                    }
+                case "帮助" or "4":
+                    {
+                        text = "帮助文档:\nhttps://flowus.cn/freemanf/share/7ddb325a-f1fd-48db-bf62-964fa6cb8cf4";
                         return true;
                     }
                 default:
