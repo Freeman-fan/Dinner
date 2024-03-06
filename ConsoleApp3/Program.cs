@@ -41,7 +41,7 @@ namespace ConsoleApp3
 
             service.Event.OnPrivateMessage += async (sender, EventArgs) =>  //私聊消息处理
             {
-                //判断临时会话
+                //判断临时会话，是则退出
                 if (EventArgs.IsTemporaryMessage == true)
                 {
                     return;
@@ -56,7 +56,7 @@ namespace ConsoleApp3
                 //图片处理入口
                 if (EventArgs.Message.IsMultiImageMessage() == true || EventArgs.Message.IsSingleImageMessage() == true)
                 {
-                    System.Drawing.Image image = (System.Drawing.Image)EventArgs.Message.GetAllImage();
+                    Bitmap photo = EventArgs.Message.GetAllImage();
 
                 };
                 */
@@ -70,6 +70,13 @@ namespace ConsoleApp3
 
                 //判断文本类型
                 char first = rawMessage[0];
+
+                //无提示词聊天
+                if (Chat(ref rawMessage) == true)
+                {
+                    await EventArgs.Sender.SendPrivateMessage(rawMessage);
+                }
+
                 //【.】命令入口
                 if (first == char.Parse("."))
                 {
@@ -192,6 +199,19 @@ namespace ConsoleApp3
                 */
             };
 
+            service.Event.OnFriendRequest += async (sender, EventArgs) =>  //好友申请事件
+            {
+                string comment = EventArgs.Comment;
+                if (comment == "0209")
+                {
+                    await EventArgs.Accept();
+                }
+                else
+                {
+                    await EventArgs.Reject();
+                }
+            };
+
 
             //启动服务并捕捉错误
 
@@ -207,26 +227,115 @@ namespace ConsoleApp3
         {
             switch (message)
             {
+                //////早上好
                 case "早上好":
                     {
-                        message = "早上好……啊！已经早上了吗";
+                        if (GetRanNum(1, 3, out int num) == true)
+                        {
+                            switch (num)
+                            {
+                                case -1 or 1:
+                                    {
+                                        message = "已经是早上了吗，曲子还差一点，再努力会吧。";
+                                        break;
+                                    }
+                                case 2:
+                                    {
+                                        message = "早上好，我刚写好一首demo，你能听听吗？想知道你的感想。";
+                                        break;
+                                    }
+                                case 3:
+                                    {
+                                        message = "早。啊不用担心，曲子快写完了，我结尾完就会去小睡一会，真的。";
+                                        break;
+                                    }
+                            }
+                        }
                         return true;
                     }
+                //////晚上好
                 case "晚上好":
                     {
-                        message = "晚上了吗……我刚睡醒欸";
+                        if (GetRanNum(1, 3, out int num) == true)
+                        {
+                            switch (num)
+                            {
+                                case -1 or 1:
+                                    {
+                                        message = "欸？晚上了吗，嗯我刚醒。";
+                                        break;
+                                    }
+                                case 2:
+                                    {
+                                        message = "晚上好，我打算一会去看看冰箱里，望月小姐给我留了什么，重新加热一下。";
+                                        break;
+                                    }
+                                case 3:
+                                    {
+                                        message = "到了晚上变得有点凉呢，泡点果茶或者花茶喝，暖暖身子，顺便提提神吧。";
+                                        break;
+                                    }
+                            }
+                        }
                         return true;
                     }
+                //////吃了吗
                 case "吃了吗":
                     {
-                        message = "我在吃，你呢";
+                        if (GetRanNum(1, 3, out int num) == true)
+                        {
+                            switch (num)
+                            {
+                                case -1 or 1:
+                                    {
+                                        message = "欸，已经这个点了吗?一会去弄点泡面吃吧。";
+                                        break;
+                                    }
+                                case 2:
+                                    {
+                                        message = "(怕打扰到别人的奏宝关闭了麦克风嗦面中)";
+                                        break;
+                                    }
+                                case 3:
+                                    {
+                                        message = "嗯，望月小姐做的饭菜很好吃，你也不要忘了好好吃饭。";
+                                        break;
+                                    }
+                            }
+                        }
+                        return true;
+                    }
+                //////喜欢曲子
+                case "喜欢你的曲子":
+                    {
+                        if (GetRanNum(1, 3, out int num) == true)
+                        {
+                            switch (num)
+                            {
+                                case -1 or 1:
+                                    {
+                                        message = "谢谢，下次我也会努力的，喜欢你还会喜欢。";
+                                        break;
+                                    }
+                                case 2:
+                                    {
+                                        message = "谢谢，如果这首歌能触及你的心底就好了。";
+                                        break;
+                                    }
+                                case 3:
+                                    {
+                                        message = "嗯，我好开心，但这还不够，下一次的曲子一定能够……";
+                                        break;
+                                    }
+                            }
+                        }
                         return true;
                     }
                 case "h":
-                    {
-                        message = "帮助文档:\nhttps://flowus.cn/freemanf/share/7ddb325a-f1fd-48db-bf62-964fa6cb8cf4";
-                        return true;
-                    };
+                {
+                    message = "帮助文档:\nhttps://flowus.cn/freemanf/share/7ddb325a-f1fd-48db-bf62-964fa6cb8cf4";
+                    return true;
+                };
             }
             return false;
         }
@@ -415,6 +524,38 @@ namespace ConsoleApp3
             });
             return reply;
         }
+
+        #endregion
+
+        #region  方法：函数体
+
+        static bool GetRanNum(int min, int max, out int num)   //快速随机数生成器
+        {
+            num = -1;
+            Random random = new Random();
+            num = random.Next(min, max);
+            if (num == -1)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        #endregion
+
+
+        #region  测试方法
+
+        /*
+        static Bitmap CreateNullPhoto(Bitmap photo)
+        {
+            Bitmap newPhoto = new Bitmap(photo.Width, photo.Height);
+            return newPhoto;
+        }
+        */
 
         #endregion
     }
