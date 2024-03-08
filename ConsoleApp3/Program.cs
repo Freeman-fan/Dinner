@@ -188,17 +188,62 @@ namespace DinnerBot
                                         }
                                     }
                                     */
-                                    Graphics graphics = Graphics.FromImage(image);
+                                    Bitmap reBitmap;
+                                    if (image.Width > 1000 && image.Height > 1000)
+                                    {
+                                        double zoom;
+                                        if (image.Width > image.Height)
+                                        {
+                                            zoom = 1000.0 / image.Width;
+                                        }
+                                        else
+                                        {
+                                            zoom = 1000.0 / image.Height;
+                                        }
+                                        reBitmap = new Bitmap((int)(image.Width * zoom), (int)(image.Height * zoom));
+                                        for (int y1 = 0; y1 < reBitmap.Height; y1++)
+                                        {
+                                            for (int x1 = 0; x1 < reBitmap.Width; x1++)
+                                            {
+                                                int x = (int)Math.Round(x1 * (1 / zoom));
+                                                int y = (int)Math.Round(y1 * (1 / zoom));
+                                                if (x > (image.Width - 1))
+                                                {
+                                                    x = image.Width - 1;
+                                                }
+                                                if (y > (image.Height - 1))
+                                                {
+                                                    y = image.Height - 1;
+                                                }
+                                                reBitmap.SetPixel(x1, y1, image.GetPixel(x, y));
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        reBitmap = new Bitmap(image.Width,image.Height);
+                                        for (int y1 = 0; y1 < image.Height; y1++)
+                                        {
+                                            for (int x1 = 0; x1 < image.Width; x1++)
+                                            {
+                                                reBitmap.SetPixel(x1, y1, image.GetPixel(x1, y1));
+                                            }
+                                        }
+                                    }
+
+
+                                    Graphics graphics = Graphics.FromImage(reBitmap);
                                     Brush brush = new SolidBrush(Color.White);
                                     Brush outlineBrush = new SolidBrush(Color.Black);
-                                    float fontNum = image.Width / 9;
-                                    float outlineWidth = image.Width / 45;
+                                    float fontNum = reBitmap.Width / 9;
+                                    float outlineWidth = reBitmap.Width / 45;
                                     System.Drawing.Font font = new System.Drawing.Font("黑体", fontNum);
                                     Pen outlintPen = new Pen(Color.Black, outlineWidth);
-                                    int x_cn = (image.Width - (int)graphics.MeasureString(cn, font).Width) / 2;
-                                    int x_mNum = (image.Width - (int)graphics.MeasureString(mNum, font).Width) / 2;
-                                    int y_cn = (image.Height - (int)graphics.MeasureString(cn, font).Height) / 2;
+                                    int x_cn = (reBitmap.Width - (int)graphics.MeasureString(cn, font).Width) / 2;
+                                    int x_mNum = (reBitmap.Width - (int)graphics.MeasureString(mNum, font).Width) / 2;
+                                    int y_cn = (reBitmap.Height - (int)graphics.MeasureString(cn, font).Height) / 2;
                                     int y_mNum = y_cn + (int)graphics.MeasureString(cn, font).Height;
+
                                     for (float p = -outlineWidth; p <= outlineWidth; p += 0.5f)
                                     {
                                         graphics.DrawString(cn, font, outlineBrush, x_cn + p, y_cn + p);
@@ -208,7 +253,7 @@ namespace DinnerBot
                                     graphics.DrawString(mNum, font, brush, x_mNum, y_mNum);
                                     graphics.Dispose();
                                     MemoryStream ms = new MemoryStream();
-                                    image.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
+                                    reBitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
                                     MessageBody mb3 = SayPhoto(ms);
                                     await EventArgs.Sender.SendPrivateMessage(mb3);
                                     memberState[i, 1] = "1.1";
@@ -306,82 +351,82 @@ namespace DinnerBot
             };
 
             service.Event.OnGroupMessage += async (sender, EventArgs) =>  //群消息处理
-            {
-                ///////////////////////////////////////////////
-                ///文本处理
-                ///////////////////////////////////////////////
-
-                string rawMessage = EventArgs.Message.GetText();
-
-                //判断文本类型
-                char first = rawMessage[0];
-                //【.】命令入口
-                if (first == char.Parse("."))
                 {
-                    //提取内容
-                    string message = rawMessage.Remove(0, 1);
+                    ///////////////////////////////////////////////
+                    ///文本处理
+                    ///////////////////////////////////////////////
 
-                    /*0.聊天*/
-                    if (Chat(ref message) == true)
-                    {
-                        MessageBody mb = SayTextMessage(message);
-                        await EventArgs.SourceGroup.SendGroupMessage(mb);
-                    }
+                    string rawMessage = EventArgs.Message.GetText();
 
-                    /*1.计算价格【.y】*/
-                    if (message[0] == char.Parse("y"))
+                    //判断文本类型
+                    char first = rawMessage[0];
+                    //【.】命令入口
+                    if (first == char.Parse("."))
                     {
-                        if (PriceCalculator(message, rate, out string text) == true)
+                        //提取内容
+                        string message = rawMessage.Remove(0, 1);
+
+                        /*0.聊天*/
+                        if (Chat(ref message) == true)
                         {
-                            MessageBody mb = ReplyTextMessage(text, EventArgs.Message.MessageId);
-                            await EventArgs.Reply(mb);
+                            MessageBody mb = SayTextMessage(message);
+                            await EventArgs.SourceGroup.SendGroupMessage(mb);
+                        }
+
+                        /*1.计算价格【.y】*/
+                        if (message[0] == char.Parse("y"))
+                        {
+                            if (PriceCalculator(message, rate, out string text) == true)
+                            {
+                                MessageBody mb = ReplyTextMessage(text, EventArgs.Message.MessageId);
+                                await EventArgs.Reply(mb);
+                            }
+                        }
+
+                        /*2.修改汇率【.c】*/
+                        if (message[0] == char.Parse("c"))
+                        {
+                            if (Changerate(message, ref rate, out string text) == true)
+                            {
+                                MessageBody mb = ReplyTextMessage(text, EventArgs.Message.MessageId);
+                                await EventArgs.Reply(mb);
+                            }
+                        }
+
+                        /*3.常用链接【.l】*/
+                        if (message[0] == char.Parse("l"))
+                        {
+                            if (Link(message, out string text) == true)
+                            {
+                                MessageBody mb = ReplyTextMessage(text, EventArgs.Message.MessageId);
+                                await EventArgs.Reply(mb);
+                            }
                         }
                     }
-
-                    /*2.修改汇率【.c】*/
-                    if (message[0] == char.Parse("c"))
+                    //【/】命令入口
+                    else if (first == char.Parse("/"))
                     {
-                        if (Changerate(message, ref rate, out string text) == true)
-                        {
-                            MessageBody mb = ReplyTextMessage(text, EventArgs.Message.MessageId);
-                            await EventArgs.Reply(mb);
-                        }
+                        //提取内容
+                        string message = rawMessage.Remove(0, 1);
                     }
 
-                    /*3.常用链接【.l】*/
-                    if (message[0] == char.Parse("l"))
-                    {
-                        if (Link(message, out string text) == true)
-                        {
-                            MessageBody mb = ReplyTextMessage(text, EventArgs.Message.MessageId);
-                            await EventArgs.Reply(mb);
-                        }
-                    }
-                }
-                //【/】命令入口
-                else if (first == char.Parse("/"))
-                {
-                    //提取内容
-                    string message = rawMessage.Remove(0, 1);
-                }
 
+                    /*****************************************
+                     * api测试区域
+                     *****************************************/
 
-                /*****************************************
-                 * api测试区域
-                 *****************************************/
+                    /*读取消息发送者qq号
+                    string senderid = EventArgs.Sender.Id.ToString();
+                     */
 
-                /*读取消息发送者qq号
-                string senderid = EventArgs.Sender.Id.ToString();
-                 */
-
-                /*回复消息设置
-                int messageId = 0;
-                messageId = (int)EventArgs.Message.MessageId;
-                string testText = "这是一段测试文本";
-                MessageBody testReply = ReplyTextMessage(testText, messageId);
-                await EventArgs.Reply(testReply);
-                */
-            };
+                    /*回复消息设置
+                    int messageId = 0;
+                    messageId = (int)EventArgs.Message.MessageId;
+                    string testText = "这是一段测试文本";
+                    MessageBody testReply = ReplyTextMessage(testText, messageId);
+                    await EventArgs.Reply(testReply);
+                    */
+                };
 
 
             //启动服务并捕捉错误
