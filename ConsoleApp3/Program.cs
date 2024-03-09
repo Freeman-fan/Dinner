@@ -601,36 +601,24 @@ namespace DinnerBot
             double pprice = 0;  //均价
             text = "原价：" + jp + "y\n" + "当前参考汇率为:" + rate + "\n";
             //①
-            string type1 = "";
-            if (jp > 1000)
-            {
-                cny1 = jp * 0.052;
-                type1 = "52汇";
-            }
-            else
-            {
-                cny1 = jp * 0.053;
-                type1 = "53汇";
-            }
+            cny1 = jp * 0.052;
             cny1 = Math.Round(cny1, 2, MidpointRounding.AwayFromZero);
-            type1 = "人工切(" + type1 + "):" + cny1 + "r\n";
+            string type1 = "人工切:" + cny1 + "r\n";
             //②
-            string type2 = "";
             cny2 = (jp + 50) * (rate + 0.003);
             cny2 = Math.Round(cny2, 2, MidpointRounding.AwayFromZero);
-            type2 = "机切浮动汇:" + cny2 + "r\n";
+            string type2 = "机切浮动汇:" + cny2 + "r\n";
             //③
-            string type3 = "";
             if (jp > 1000)
             {
-                cny3 = jp * 0.052;
+                cny3 = jp * 0.053;
             }
             else
             {
-                cny3 = (jp + 100) * 0.052;
+                cny3 = (jp + 100) * 0.053;
             }
             cny3 = Math.Round(cny3, 2, MidpointRounding.AwayFromZero);
-            type3 = "机切52汇:" + cny3 + "r\n";
+            string type3 = "机切53汇:" + cny3 + "r\n";
             //计算最小值
             double min = Math.Min(cny1, Math.Min(cny2, cny3));
             if (min == cny1)
@@ -700,6 +688,11 @@ namespace DinnerBot
                 case "帮助" or "4":
                     {
                         text = "帮助文档:\nhttps://flowus.cn/freemanf/share/7ddb325a-f1fd-48db-bf62-964fa6cb8cf4";
+                        return true;
+                    }
+                case "cd" or "CD" or "专辑":
+                    {
+                        text = "【腾讯文档】PJSK光盘封面对照表\nhttps://docs.qq.com/sheet/DUE5tR3V4TWZGeWxN";
                         return true;
                     }
                 default:
