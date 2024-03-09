@@ -17,6 +17,8 @@ using YukariToolBox.LightLog;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Sora.Net;
+using System.Drawing.Imaging;
+using Sora.Entities.Info;
 
 namespace DinnerBot
 {
@@ -52,6 +54,7 @@ namespace DinnerBot
             /*************
              * 监听事件
              *************/
+
 
             service.Event.OnPrivateMessage += async (sender, EventArgs) =>  //私聊消息处理
             {
@@ -108,14 +111,14 @@ namespace DinnerBot
                 ///////////////////////////////////////////////
 
                 string rawMessage = EventArgs.Message.GetText();
-
+#if false
                 //业务二级目录判断
                 for (int i = 0; i < 10; i++)
                 {
                     //判断是否有业务状态，是则获取状态码
                     if (memberState[i, 0] == EventArgs.SenderInfo.UserId.ToString())
                     {
-                        //标cn流程 1.1
+                        //标cn流程
                         switch (memberState[i, 1])
                         {
                             case "1.1":
@@ -164,6 +167,7 @@ namespace DinnerBot
                                         await EventArgs.Sender.SendPrivateMessage(mb2);
                                         break;
                                     }
+
                                     MessageBody mb5 = SayTextMessage("已收到图片，正在处理，请稍候");
                                     await EventArgs.Sender.SendPrivateMessage(mb5);
                                     //获取图片
@@ -172,7 +176,9 @@ namespace DinnerBot
                                     List<Sora.Entities.Segment.DataModel.ImageSegment> imageSegments = new List<Sora.Entities.Segment.DataModel.ImageSegment>();
                                     imageSegments = T.ToList();
                                     string imagePath = imageSegments[0].ImgFile;
-                                    imagePath = imagePath.Remove(0, 7);  //移除imgFile路径中的"file://"
+
+                                    imagePath = Directory.GetCurrentDirectory() + "\\" + imagePath;
+                                    //imagePath = imagePath.Remove(0, 7);  //移除imgFile路径中的"file://"
                                     //处理图片
                                     Bitmap image = new Bitmap(imagePath);
                                     Bitmap newimage = new Bitmap(image.Width, image.Height);
@@ -221,7 +227,7 @@ namespace DinnerBot
                                     }
                                     else
                                     {
-                                        reBitmap = new Bitmap(image.Width,image.Height);
+                                        reBitmap = new Bitmap(image.Width, image.Height);
                                         for (int y1 = 0; y1 < image.Height; y1++)
                                         {
                                             for (int x1 = 0; x1 < image.Width; x1++)
@@ -243,7 +249,6 @@ namespace DinnerBot
                                     int x_mNum = (reBitmap.Width - (int)graphics.MeasureString(mNum, font).Width) / 2;
                                     int y_cn = (reBitmap.Height - (int)graphics.MeasureString(cn, font).Height) / 2;
                                     int y_mNum = y_cn + (int)graphics.MeasureString(cn, font).Height;
-
                                     for (float p = -outlineWidth; p <= outlineWidth; p += 0.5f)
                                     {
                                         graphics.DrawString(cn, font, outlineBrush, x_cn + p, y_cn + p);
@@ -252,19 +257,27 @@ namespace DinnerBot
                                     graphics.DrawString(cn, font, brush, x_cn, y_cn);
                                     graphics.DrawString(mNum, font, brush, x_mNum, y_mNum);
                                     graphics.Dispose();
+                                    string outputPath = Directory.GetCurrentDirectory() + "\\" + GetRanStr(16) + ".jpg";
+                                    reBitmap.Save(outputPath, ImageFormat.Jpeg);
+
+                                    /*
                                     MemoryStream ms = new MemoryStream();
                                     reBitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
                                     MessageBody mb3 = SayPhoto(ms);
                                     await EventArgs.Sender.SendPrivateMessage(mb3);
-                                    memberState[i, 1] = "1.1";
+                                    */
+
+                                    MessageBody mb3 = SayPhoto(outputPath);
                                     MessageBody mb4 = SayTextMessage("已完成处理。可以发送下一组cn和m码或发送“结束”退出当前状态");
+                                    await EventArgs.Sender.SendPrivateMessage(mb3);
                                     await EventArgs.Sender.SendPrivateMessage(mb4);
+                                    memberState[i, 1] = "1.1";
                                     break;
                                 }
                         }
                     }
                 }
-
+#endif
                 //判断文本类型
                 char first = rawMessage[0];
 
@@ -317,6 +330,7 @@ namespace DinnerBot
                         }
                     }
                 }
+#if false
 
                 //【/】业务命令入口
                 if (first == char.Parse("/"))
@@ -343,11 +357,8 @@ namespace DinnerBot
                         MessageBody mb = SayTextMessage("已进入标记cn功能，请发送cn和m码，用“，”分隔。\n发送“结束”退出当前状态");
                         await EventArgs.Sender.SendPrivateMessage(mb);
                     }
-
                 }
-
-
-
+#endif
             };
 
             service.Event.OnGroupMessage += async (sender, EventArgs) =>  //群消息处理
@@ -721,13 +732,23 @@ namespace DinnerBot
             return reply;
         }
 
-        static MessageBody SayPhoto(MemoryStream ms)   //构建回复：单一图片
+        static MessageBody SayPhoto(MemoryStream ms)   //构建回复：单一图片(通过图片流)
         {
             MessageBody reply = new MessageBody(new List<SoraSegment>()
             {
                 SoraSegment.Image(ms),
             });
             return reply;
+        }
+
+        static MessageBody SayPhoto(string path)    //构建回复：单一图片(通过绝对路径)
+        {
+            MessageBody reply = new MessageBody(new List<SoraSegment>()
+            {
+                SoraSegment.Image(path),
+            });
+            return reply;
+
         }
 
         #endregion
@@ -747,6 +768,21 @@ namespace DinnerBot
             {
                 return true;
             }
+        }
+
+        static string GetRanStr(int length)   //随机字符串生成
+        {
+            string str;
+            string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+            Random random = new Random(); // 创建Random对象
+            char[] result = new char[length]; // 存放结果的char数组
+            for (int i = 0; i < length; i++)
+            {
+                int index = random.Next(characters.Length); // 获取随机索引值
+                result[i] = characters[index]; // 将随机字符添加到结果数组中
+            }
+            str = new string(result); // 转换为字符串形式输出
+            return str;
         }
 
         #endregion
